@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Query;
 
 namespace MyPlugins
 {
-    public class ContactPostCreate : IPlugin
+    public class AccountUpdatePlugin : IPlugin
     {
         public void Execute(IServiceProvider serviceProvider)
         {
@@ -30,31 +31,28 @@ namespace MyPlugins
             if (context.InputParameters.Contains("Target") &&
                context.InputParameters["Target"] is Entity)
             {
-                Entity contactRecord = (Entity)context.InputParameters["Target"];
+                Entity account = (Entity)context.InputParameters["Target"];
 
-                string lastname = contactRecord.Attributes["lastname"].ToString();
+                ////Get Phone number
+                //string phone = account.Attributes["telephone1"].ToString();
 
-                // checking if user has entered first name 
-                if (contactRecord.Attributes.Contains("firstname"))
+                //// Fax
+                //string fax = account.Attributes["fax"].ToString();
+
+                ColumnSet columnSet = new ColumnSet();
+                columnSet.AddColumn("telephone1");
+                columnSet.AddColumn("fax");
+                // columnSet.AddColumns(new string[] { "telephone1", "fax" });
+
+                //  Entity accountWithMoreAttributes = svc.Retrieve("account", account.Id, columnSet);
+
+                // Using Pre-entity Image
+                Entity accountPreImage = context.PreEntityImages["PreImage"];
+
+                if (!accountPreImage.Attributes.Contains("telephone1") && !accountPreImage.Attributes.Contains("fax"))
                 {
-                    string firstname = contactRecord.Attributes["firstname"].ToString();
+                    throw new InvalidPluginExecutionException("Either Phone or Fax is mandatory");
                 }
-
-                tracingService.Trace("contact guid is" + contactRecord.Id);
-
-                // Create a task for this contact
-                // Create in-memory object 
-                Entity task = new Entity("task");
-                task.Attributes.Add("subject", "A task from Plugin");
-                // OR
-                task["description"] = "Sample desc";
-                task["regardingobjectid"] = new EntityReference("contact", contactRecord.Id);
-
-                // Call organization web service to create task record in database
-                Guid taskGuid = svc.Create(task);
-
-                tracingService.Trace("task guid is" + taskGuid);
-
             }
         }
     }
