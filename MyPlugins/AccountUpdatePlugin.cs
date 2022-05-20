@@ -33,15 +33,12 @@ namespace MyPlugins
             {
                 Entity account = (Entity)context.InputParameters["Target"];
 
-                ////Get Phone number
-                //string phone = account.Attributes["telephone1"].ToString();
+                decimal updatedAnnualRevenue = ((Money)account.Attributes["annualrevenue"]).Value;
 
-                //// Fax
-                //string fax = account.Attributes["fax"].ToString();
 
-                ColumnSet columnSet = new ColumnSet();
-                columnSet.AddColumn("telephone1");
-                columnSet.AddColumn("fax");
+                //ColumnSet columnSet = new ColumnSet();
+                //columnSet.AddColumn("telephone1");
+                //columnSet.AddColumn("fax");
                 // columnSet.AddColumns(new string[] { "telephone1", "fax" });
 
                 //  Entity accountWithMoreAttributes = svc.Retrieve("account", account.Id, columnSet);
@@ -49,10 +46,17 @@ namespace MyPlugins
                 // Using Pre-entity Image
                 Entity accountPreImage = context.PreEntityImages["PreImage"];
 
-                if (!accountPreImage.Attributes.Contains("telephone1") && !accountPreImage.Attributes.Contains("fax"))
+                decimal oldAnnualRevenue = (accountPreImage.Attributes["annualrevenue"] as Money).Value;
+
+                if(oldAnnualRevenue-updatedAnnualRevenue > 100000)
                 {
-                    throw new InvalidPluginExecutionException("Either Phone or Fax is mandatory");
+
                 }
+
+                //if (!accountPreImage.Attributes.Contains("telephone1") && !accountPreImage.Attributes.Contains("fax"))
+                //{
+                //    throw new InvalidPluginExecutionException("Either Phone or Fax is mandatory");
+                //}
             }
         }
     }
