@@ -26,11 +26,20 @@ namespace CustomWorkflows
             IOrganizationService service = serviceFactory.CreateOrganizationService(context.UserId);
 
             Entity task = new Entity("task");
-            task["subject"] = TaskSubject.Get(executionContext);
+            task["subject"] = WelcomeMessage + TaskSubject.Get(executionContext);
             task["regardingobjectid"] = new EntityReference("account", context.PrimaryEntityId);
 
             service.Create(task);
         
         }
+
+        string WelcomeMessage = string.Empty;
+
+        public TaskCreate(string unsecure, string secure )
+
+        {
+            WelcomeMessage = unsecure;
+        }
+
     }
 }

@@ -1,7 +1,9 @@
 ﻿using System;
 using Microsoft.PowerPlatform.Dataverse.Client;
 using Microsoft.Xrm.Sdk;
+using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Query;
+using System.Linq;
 
 namespace ConsoleAppCore
 {
@@ -38,18 +40,75 @@ namespace ConsoleAppCore
             // Pull contacts
             // Many ways to pull data
             // 1. Use QueryExpression
+            // 2. Use QuerByAttribute
+            // 3. Use Fetchxml (faster), supports aggregate functions.
+            // 4. Use Linq
+
+
+            // Method 1: Using QueryExpression
             //select firstname,lastname from contact where attname =value
-            QueryExpression query = new QueryExpression("contact");
-            query.ColumnSet.AddColumn("fullname");
-            //  query.Criteria.AddCondition("")
+            //QueryExpression query = new QueryExpression("contact");
+            //query.ColumnSet.AddColumn("fullname");
+            ////  query.Criteria.AddCondition("")
 
-            EntityCollection collection = service.RetrieveMultiple(query);
 
-            foreach (var item in collection.Entities)
+            // Method 2: Using QueryByAttribute
+            //QueryByAttribute query = new QueryByAttribute("contact");
+            //query.ColumnSet = new ColumnSet(new string[] { "fullname"});
+            //query.AddAttributeValue("fullname", "test");
+
+            // Metho 3: Using Fetch XML
+
+            //            string xmlQuery = @"<fetch version='1.0' output-format='xml-platform' mapping='logical' distinct='false'>
+            //  <entity name='systemuser'>
+            //    <attribute name='fullname' />
+            //    <attribute name='title' />
+            //    <attribute name='address1_telephone1' />
+            //    <attribute name='businessunitid' />
+            //    <attribute name='positionid' />
+            //    <attribute name='systemuserid' />
+            //    <order attribute='fullname' descending='false' />
+            //    <filter type='and'>
+            //      <condition attribute='isdisabled' operator='eq' value='0' />
+            //      <condition attribute='accessmode' operator='ne' value='3' />
+            //      <condition attribute='accessmode' operator='ne' value='5' />
+            //    </filter>
+            //  </entity>
+            //</fetch>";
+            //            EntityCollection collection = service.RetrieveMultiple(new FetchExpression(xmlQuery));
+
+            //   4. LINQ
+
+            using (var serviceContext = new OrganizationServiceContext(service))
             {
+                //var collection = from item in serviceContext.CreateQuery("contact")
+                //              where item["createdon"] as DateTime? > DateTime.Now.AddDays(-10)  
+                //              select item["fullname"];
 
-                Console.WriteLine(item.Attributes["fullname"].ToString());
+                var collection = from contact in serviceContext.CreateQuery("contact")
+                                 join account in serviceContext.CreateQuery("account")
+                                 on contact["contactid"] equals account["primarycontactid"]
+                                 select new
+                                 {
+                                     fullname = contact["fullname"],
+                                     accountname = account["name"]
+                                 };
+
+                Console.WriteLine(collection.ToList().Count);
+
+                foreach (var item in collection)
+                {
+
+                    Console.WriteLine(item.fullname + " " + item.accountname);
+                }
+
             }
+
+
+
+
+
+
         }
     }
 }
