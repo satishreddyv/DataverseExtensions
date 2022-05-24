@@ -21,6 +21,27 @@ namespace ConsoleAppCore
 
             ServiceClient service = new ServiceClient(connectionString);
 
+            // Creating account using Early bound classes
+            Account account1 = new Account();
+            account1.Name = "Test ac";
+            account1.EMailAddress1 = "";
+            account1.Revenue = new Money(1000);
+            account1.IndustryCode = account_industrycode.Consulting;
+
+            // Creating account - Late bound
+            Entity account3 = new Entity("account");
+            account3["name"] = "test acc 3";
+            account3["industrycode"] = new OptionSetValue(7);
+
+
+            Account account2 = new Account()
+            {
+                EMailAddress1 = "",
+                Name = ""
+            };
+
+
+
             //// Create contact record programatically
             //Entity contact = new Entity("contact");
             //contact["lastname"] = "Smith (console app)";
@@ -103,12 +124,6 @@ namespace ConsoleAppCore
                 }
 
             }
-
-
-
-
-
-
         }
     }
 }
